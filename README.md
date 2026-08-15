@@ -1,5 +1,10 @@
 # shardfit
 
+[![CI](https://img.shields.io/github/actions/workflow/status/azhar9/shardfit/ci.yml?branch=main)](https://github.com/azhar9/shardfit/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/azhar9/shardfit/branch/main/graph/badge.svg)](https://codecov.io/gh/azhar9/shardfit)
+[![License: MIT](https://img.shields.io/github/license/azhar9/shardfit)](LICENSE)
+[![Go](https://img.shields.io/github/go-mod/go-version/azhar9/shardfit)](go.mod)
+
 Split your test suite into N buckets using past runtime data, so parallel CI
 shards finish at roughly the same time. One static binary, any framework —
 pytest, jest, JUnit, xunit, or anything that can emit a test list and JUnit

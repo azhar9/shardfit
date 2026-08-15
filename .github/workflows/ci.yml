@@ -24,6 +24,12 @@ jobs:
           version: v2.12.2
       - name: Test
         run: go test ./...
+      - name: Coverage
+        run: go test -coverprofile=coverage.out ./...
+      - name: Upload coverage
+        uses: codecov/codecov-action@v7
+        with:
+          files: coverage.out
 
   pr-title:
     runs-on: ubuntu-latest
