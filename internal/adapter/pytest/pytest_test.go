@@ -22,11 +22,7 @@ func TestParseDurationsReconstructsFile(t *testing.T) {
 		}
 	}
 	mk("tests/test_api.py")
-	oldWd, _ := os.Getwd()
-	if err := os.Chdir(dir); err != nil {
-		t.Fatal(err)
-	}
-	defer os.Chdir(oldWd) // not parallel-safe: no t.Parallel in this package
+	t.Chdir(dir) // not parallel-safe: no t.Parallel in this package
 
 	xml := `<testsuites><testsuite name="pytest">
   <testcase classname="tests.test_api" name="test_create" time="1.234"/>
@@ -65,7 +61,9 @@ func TestParseDurationsSumsRetries(t *testing.T) {
 
 func TestDiscoverReadsInputList(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "list.txt")
-	os.WriteFile(path, []byte("tests/a.py::test_one\ntests/b.py::TestK::test_two\n"), 0o644)
+	if err := os.WriteFile(path, []byte("tests/a.py::test_one\ntests/b.py::TestK::test_two\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	tests, err := New().Discover(adapter.DiscoverConfig{Input: path})
 	if err != nil {
 		t.Fatal(err)

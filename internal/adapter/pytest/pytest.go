@@ -71,8 +71,8 @@ func (a *Adapter) Discover(cfg adapter.DiscoverConfig) ([]adapter.Test, error) {
 
 // ParseDurations maps JUnit XML testcases to pytest collect ids
 // (path::Class::test). pytest's junitxml classname is a dotted module path,
-// so the file part is reconstructed against the working tree; ids degrade to
-// the dotted form when the file is gone.
+// so the file part is reconstructed against the working tree; when the file
+// is gone, ids degrade to a slashed-path form derived from the classname.
 func (a *Adapter) ParseDurations(data []byte) (map[string]int64, error) {
 	cases, err := junitxml.Parse(data)
 	if err != nil {
@@ -89,7 +89,8 @@ func (a *Adapter) ParseDurations(data []byte) (map[string]int64, error) {
 
 // fileFor maps "tests.test_api.TestClass" to ("tests/test_api.py",
 // "TestClass") by trying candidate paths against the filesystem, then
-// package __init__.py candidates, falling back to the dotted form.
+// package __init__.py candidates, falling back to a slashed-path form
+// derived from the dotted classname.
 func fileFor(classname string) (file, class string) {
 	parts := strings.Split(classname, ".")
 	for n := len(parts); n >= 1; n-- {
