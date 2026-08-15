@@ -1,6 +1,7 @@
 package junitxml
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -74,5 +75,25 @@ func TestParseSkipsUnknownElements(t *testing.T) {
 	}
 	if len(cases) != 1 {
 		t.Fatalf("cases = %d, want 1", len(cases))
+	}
+}
+
+func TestParseSuiteWithMisleadingComment(t *testing.T) {
+	doc := `<!-- <testsuites would mislead byte sniffing -->` + "\n" + `<testsuite name="s" tests="1">
+  <testcase classname="A" name="x" time="1"/>
+</testsuite>`
+	cases, err := Parse([]byte(doc))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(cases) != 1 || cases[0].Name != "x" {
+		t.Fatalf("cases = %+v, want the single testcase", cases)
+	}
+}
+
+func TestParseUnexpectedRoot(t *testing.T) {
+	_, err := Parse([]byte(`<notjunit/>`))
+	if err == nil || !strings.Contains(err.Error(), "unexpected root") {
+		t.Fatalf("err = %v, want 'unexpected root'", err)
 	}
 }

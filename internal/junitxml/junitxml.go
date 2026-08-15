@@ -28,18 +28,40 @@ type suite struct {
 // Parse accepts a <testsuites> or bare <testsuite> root and returns all
 // testcases, including those in nested suites. Unknown elements are ignored.
 func Parse(data []byte) ([]Case, error) {
-	if bytes.Contains(data, []byte("<testsuites")) {
+	root, err := rootName(data)
+	if err != nil {
+		return nil, err
+	}
+	switch root {
+	case "testsuites":
 		var s suites
 		if err := xml.Unmarshal(data, &s); err != nil {
 			return nil, fmt.Errorf("parse JUnit XML: %w", err)
 		}
 		return flatten(s.Suites), nil
+	case "testsuite":
+		var s suite
+		if err := xml.Unmarshal(data, &s); err != nil {
+			return nil, fmt.Errorf("parse JUnit XML: %w", err)
+		}
+		return flatten([]suite{s}), nil
+	default:
+		return nil, fmt.Errorf("parse JUnit XML: unexpected root <%s>", root)
 	}
-	var s suite
-	if err := xml.Unmarshal(data, &s); err != nil {
-		return nil, fmt.Errorf("parse JUnit XML: %w", err)
+}
+
+// rootName returns the local name of the document's root element.
+func rootName(data []byte) (string, error) {
+	dec := xml.NewDecoder(bytes.NewReader(data))
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			return "", fmt.Errorf("parse JUnit XML: %w", err)
+		}
+		if se, ok := tok.(xml.StartElement); ok {
+			return se.Name.Local, nil
+		}
 	}
-	return flatten([]suite{s}), nil
 }
 
 func flatten(ss []suite) []Case {
