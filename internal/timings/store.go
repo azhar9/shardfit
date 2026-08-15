@@ -59,7 +59,7 @@ func readRef(ref string) ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("fetch timings %s: %w", ref, err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusOK {
 			return nil, fmt.Errorf("fetch timings %s: %s", ref, resp.Status)
 		}
@@ -137,7 +137,7 @@ func (s *Store) Save(path string) error {
 		return fmt.Errorf("create temp timings file: %w", err)
 	}
 	tmpName := tmp.Name()
-	cleanup := func() { tmp.Close(); os.Remove(tmpName) }
+	cleanup := func() { _ = tmp.Close(); _ = os.Remove(tmpName) }
 	// CreateTemp makes 0600 files; restore the usual 0644 before writing.
 	if err := os.Chmod(tmpName, 0o644); err != nil {
 		cleanup()
@@ -152,11 +152,11 @@ func (s *Store) Save(path string) error {
 		return fmt.Errorf("sync temp timings file: %w", err)
 	}
 	if err := tmp.Close(); err != nil {
-		os.Remove(tmpName)
+		_ = os.Remove(tmpName)
 		return fmt.Errorf("close temp timings file: %w", err)
 	}
 	if err := os.Rename(tmpName, path); err != nil {
-		os.Remove(tmpName)
+		_ = os.Remove(tmpName)
 		return fmt.Errorf("rename timings into place: %w", err)
 	}
 	return nil

@@ -1,0 +1,8 @@
+version: "2"
+linters:
+  exclusions:
+    rules:
+      # test helpers may ignore write/unmarshal errors; assertions surface them
+      - path: _test\.go
+        linters:
+          - errcheck

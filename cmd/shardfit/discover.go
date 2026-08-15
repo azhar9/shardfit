@@ -20,7 +20,9 @@ func newDiscoverCmd(a adapter.Adapter) *cobra.Command {
 				return err
 			}
 			for _, t := range tests {
-				fmt.Fprintln(cmd.OutOrStdout(), t.ID)
+				if _, err := fmt.Fprintln(cmd.OutOrStdout(), t.ID); err != nil {
+					return err
+				}
 			}
 			return nil
 		},

@@ -80,7 +80,7 @@ func ReadList(ref string, stdin io.Reader) ([]Test, error) {
 		if err != nil {
 			return nil, fmt.Errorf("open test list %s: %w", ref, err)
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 		r = f
 	}
 	var tests []Test
