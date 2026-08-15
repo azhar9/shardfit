@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -97,5 +98,44 @@ func TestSplitEstimateOnlyWritesNothing(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(dir, "bucket-1.txt")); !os.IsNotExist(err) {
 		t.Fatal("--estimate-only must not write bucket files")
+	}
+}
+
+func TestSplitOutlierCap(t *testing.T) {
+	dir := t.TempDir()
+	store, _ := timings.Load("")
+	durs := map[string]int64{}
+	var list strings.Builder
+	for i := 0; i < 100; i++ {
+		id := fmt.Sprintf("t%03d", i)
+		durs[id] = 100
+		list.WriteString(id + "\n")
+	}
+	durs["t000"] = 10000 // outlier; P99 of 100 knowns = 100, so it caps to 100
+	store.Merge(durs, time.Now(), 5)
+	timingsPath := filepath.Join(dir, "timings.json")
+	if err := store.Save(timingsPath); err != nil {
+		t.Fatal(err)
+	}
+	listPath := writeList(t, dir, list.String())
+	cmd := newSplitCmd(generic.New())
+	cmd.SetArgs([]string{"-n", "2", "--input", listPath, "--timings", timingsPath, "--out-dir", dir})
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"bucket-1.txt", "bucket-2.txt"} {
+		data, err := os.ReadFile(filepath.Join(dir, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		n := 0
+		for _, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
+			if line != "" {
+				n++
+			}
+		}
+		if n < 40 {
+			t.Fatalf("%s has %d tests: outlier cap not applied (uncapped outlier would dominate one bucket)", name, n)
+		}
 	}
 }

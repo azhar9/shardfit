@@ -30,9 +30,10 @@ type splitFlags struct {
 func newSplitCmd(a adapter.Adapter) *cobra.Command {
 	f := &splitFlags{}
 	cmd := &cobra.Command{
-		Use:   "split",
-		Short: "Write N duration-balanced bucket files",
-		Args:  cobra.NoArgs,
+		Use:          "split",
+		Short:        "Write N duration-balanced bucket files",
+		Args:         cobra.NoArgs,
+		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runSplit(a, f)
 		},
@@ -166,6 +167,15 @@ func writeBuckets(buckets [][]string, expected map[string]int64, unknownEst int6
 	}
 	if err := os.MkdirAll(f.outDir, 0o755); err != nil {
 		return fmt.Errorf("create out dir: %w", err)
+	}
+	stale, err := filepath.Glob(filepath.Join(f.outDir, "bucket-*.txt"))
+	if err != nil {
+		return fmt.Errorf("glob bucket files: %w", err)
+	}
+	for _, s := range stale {
+		if err := os.Remove(s); err != nil {
+			return fmt.Errorf("remove stale %s: %w", s, err)
+		}
 	}
 	for i, ids := range buckets {
 		path := filepath.Join(f.outDir, fmt.Sprintf("bucket-%d.txt", i+1))

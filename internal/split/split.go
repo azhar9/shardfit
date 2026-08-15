@@ -31,7 +31,7 @@ func Partition(tests []Test, expected map[string]int64, unknownEstimate int64, n
 	}
 	items := group(tests, expected, unknownEstimate, groupByFile)
 	if len(items) < n {
-		return nil, fmt.Errorf("cannot split %d tests into %d buckets: more buckets than tests", len(items), n)
+		return nil, fmt.Errorf("cannot split %d tests or groups into %d buckets: more buckets than tests", len(items), n)
 	}
 	sort.Slice(items, func(i, j int) bool {
 		if items[i].expected != items[j].expected {
