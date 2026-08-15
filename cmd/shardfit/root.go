@@ -12,7 +12,7 @@ func newRootCmd() *cobra.Command {
 	root := &cobra.Command{
 		Use:           "shardfit",
 		Short:         "Split test suites into duration-balanced buckets",
-		Version:       "0.1.0-dev",
+		Version:       version,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}

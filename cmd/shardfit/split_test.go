@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -137,5 +138,40 @@ func TestSplitOutlierCap(t *testing.T) {
 		if n < 40 {
 			t.Fatalf("%s has %d tests: outlier cap not applied (uncapped outlier would dominate one bucket)", name, n)
 		}
+	}
+}
+
+func TestSplitNeverPrunesStore(t *testing.T) {
+	// spec §10: pruning happens only in report — a filtered split run must
+	// never touch the store, or a unit-only run would delete integration
+	// timings. Assert the store file is byte-identical after a split.
+	dir := t.TempDir()
+	store, _ := timings.Load("")
+	store.Merge(map[string]int64{"a": 10, "b": 10}, time.Now(), 5)
+	store.Merge(map[string]int64{"stale::test": 1}, time.Now().AddDate(0, 0, -60), 5)
+	timingsPath := filepath.Join(dir, "timings.json")
+	if err := store.Save(timingsPath); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.ReadFile(timingsPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	list := writeList(t, dir, "a\nb\n")
+	cmd := newSplitCmd(generic.New())
+	cmd.SetArgs([]string{"-n", "2", "--input", list, "--timings", timingsPath, "--out-dir", dir})
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	after, err := os.ReadFile(timingsPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(before, after) {
+		t.Fatal("split must never modify the timings store (prune is report-only)")
+	}
+	back, _ := timings.Load(timingsPath)
+	if _, ok := back.Tests["stale::test"]; !ok {
+		t.Fatal("stale entry must survive a split run")
 	}
 }
