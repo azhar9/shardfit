@@ -1,3 +1,5 @@
+//go:build !windows
+
 package jest
 
 import (
@@ -59,7 +61,7 @@ func TestDiscoverRelativizesPaths(t *testing.T) {
 		t.Fatal(err)
 	}
 	abs := filepath.Join(dir, "src", "a.test.js")
-	script := fmt.Sprintf("#!/bin/sh\nprintf '%%s\\n%%s\\n%%s\\n' '%s' '/outside/cwd/b.test.js' 'src/rel.test.js'\n", abs)
+	script := fmt.Sprintf("#!/bin/sh\nprintf '%%s\\n%%s\\n%%s\\n%%s\\n' '%s' '/outside/cwd/b.test.js' 'src/rel.test.js' '%s'\n", abs, filepath.Join(dir, "..foo", "c.test.js"))
 	if err := os.WriteFile(filepath.Join(bin, "jest"), []byte(script), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -69,6 +71,12 @@ func TestDiscoverRelativizesPaths(t *testing.T) {
 	if err := os.WriteFile(abs, nil, 0o644); err != nil {
 		t.Fatal(err)
 	}
+	if err := os.MkdirAll(filepath.Join(dir, "..foo"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "..foo", "c.test.js"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
 	t.Chdir(dir)
 
@@ -76,7 +84,7 @@ func TestDiscoverRelativizesPaths(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := []string{"src/a.test.js", "/outside/cwd/b.test.js", "src/rel.test.js"}
+	want := []string{"src/a.test.js", "/outside/cwd/b.test.js", "src/rel.test.js", "..foo/c.test.js"}
 	if len(tests) != len(want) {
 		t.Fatalf("tests = %+v, want %d entries", tests, len(want))
 	}
