@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,6 +61,9 @@ func runReport(a adapter.Adapter, f *reportFlags) error {
 	if isURL(out) {
 		return fmt.Errorf("cannot write timings to a URL (%s); use --timings-out with a local path", out)
 	}
+	if f.pruneAfter < 1 {
+		return fmt.Errorf("--prune-after must be >= 1, got %d", f.pruneAfter)
+	}
 	store, err := timings.Load(f.timingsRef)
 	if err != nil {
 		return err
@@ -89,7 +93,8 @@ func runReport(a adapter.Adapter, f *reportFlags) error {
 }
 
 func isURL(s string) bool {
-	return strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://")
+	u, err := url.Parse(s)
+	return err == nil && (u.Scheme == "http" || u.Scheme == "https")
 }
 
 // expandXML glob-expands each argument and dedupes by resolved path. A glob

@@ -85,6 +85,24 @@ func TestReportRejectsURLDestination(t *testing.T) {
 	}
 }
 
+func TestReportRejectsBadPruneAfter(t *testing.T) {
+	dir := t.TempDir()
+	xmlPath := filepath.Join(dir, "results.xml")
+	if err := os.WriteFile(xmlPath, []byte(reportFixture), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	timingsPath := filepath.Join(dir, "timings.json")
+	cmd := newReportCmd(generic.New())
+	cmd.SetArgs([]string{"--junit-xml", xmlPath, "--timings-out", timingsPath, "--prune-after", "0"})
+	err := cmd.Execute()
+	if err == nil || !strings.Contains(err.Error(), "prune-after") {
+		t.Fatalf("err = %v, want 'prune-after' rejection", err)
+	}
+	if _, err := os.Stat(timingsPath); !os.IsNotExist(err) {
+		t.Fatalf("timings file was written despite bad --prune-after (stat err = %v)", err)
+	}
+}
+
 func TestReportNoFiles(t *testing.T) {
 	dir := t.TempDir()
 	cmd := newReportCmd(generic.New())
