@@ -40,6 +40,28 @@ func TestParseDurationsJUnitLogger(t *testing.T) {
 	}
 }
 
+func TestParseDurationsFullDisplayNames(t *testing.T) {
+	// real JUnitTestLogger 1.1.0 shape: name already carries the full
+	// display name; the classname prefix must not be duplicated
+	xml := `<testsuite name="Demo.Tests.CalculatorTests" tests="2">
+  <testcase classname="Demo.Tests.CalculatorTests" name="Demo.Tests.CalculatorTests.TestFastOne" time="0.3"/>
+  <testcase classname="Demo.Tests.CalculatorTests" name="Demo.Tests.CalculatorTests.TestScaled(ms: 100)" time="0.1"/>
+</testsuite>`
+	got, err := New().ParseDurations([]byte(xml))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]int64{
+		"Demo.Tests.CalculatorTests.TestFastOne":         300,
+		"Demo.Tests.CalculatorTests.TestScaled(ms: 100)": 100,
+	}
+	for id, d := range want {
+		if got[id] != d {
+			t.Fatalf("got[%q] = %d, want %d (all: %v)", id, got[id], d, got)
+		}
+	}
+}
+
 func TestParseDurationsTheoryCases(t *testing.T) {
 	// [Theory] + [InlineData] rows: JUnitTestLogger emits one testcase per
 	// row, with the arguments in the display name — each row keeps its own

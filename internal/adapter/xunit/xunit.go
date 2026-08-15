@@ -5,6 +5,7 @@ package xunit
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/azhar9/shardfit/internal/adapter"
 	"github.com/azhar9/shardfit/internal/junitxml"
@@ -33,12 +34,18 @@ func (a *Adapter) Discover(cfg adapter.DiscoverConfig) ([]adapter.Test, error) {
 }
 
 // ParseDurations uses classname.method ids from the JUnitTestLogger output.
+// JUnitTestLogger emits the full display name (namespace included) in the
+// name attribute — exactly what `dotnet test --list-tests` prints — so the
+// name is used as-is when it already carries the classname prefix.
 func (a *Adapter) ParseDurations(data []byte) (map[string]int64, error) {
 	cases, err := junitxml.Parse(data)
 	if err != nil {
 		return nil, err
 	}
 	return junitxml.SumByID(cases, func(c junitxml.Case) string {
+		if strings.HasPrefix(c.Name, c.Classname+".") {
+			return c.Name
+		}
 		return c.Classname + "." + c.Name
 	}), nil
 }
