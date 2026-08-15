@@ -1,3 +1,4 @@
 /shardfit
 /dist/
 *.tmp
+.DS_Store
