@@ -30,4 +30,4 @@ release:
 changelog:
   use: git
   # no author emails in public release notes
-  format: "{{.Message}} ({{.ShortHash}})"
+  format: "{{.AbbrevHash}} {{.Message}}"
