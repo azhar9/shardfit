@@ -28,4 +28,6 @@ release:
   draft: false
 
 changelog:
-  use: github
+  use: git
+  # no author emails in public release notes
+  format: "{{.Message}} ({{.ShortHash}})"
