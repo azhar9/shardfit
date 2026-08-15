@@ -44,7 +44,7 @@ func Partition(tests []Test, expected map[string]int64, unknownEstimate int64, n
 	for _, it := range items {
 		b := 0
 		for i := 1; i < n; i++ {
-			if loads[i] < loads[b] {
+			if loads[i] < loads[b] || (loads[i] == loads[b] && len(buckets[i]) < len(buckets[b])) {
 				b = i
 			}
 		}

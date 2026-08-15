@@ -138,3 +138,17 @@ func TestPartitionRejectsZeroBuckets(t *testing.T) {
 		t.Fatal("want error for 0 buckets")
 	}
 }
+
+func TestPartitionSpreadsZeroWeights(t *testing.T) {
+	// cold start with no history: every estimate is 0, and loads never
+	// differ — buckets must still round-robin on test count, not pile
+	// everything into bucket 0
+	tests := []Test{{ID: "a"}, {ID: "b"}, {ID: "c"}, {ID: "d"}}
+	buckets, err := Partition(tests, nil, 0, 2, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(buckets[0]) != 2 || len(buckets[1]) != 2 {
+		t.Fatalf("buckets = %v, want 2 and 2", buckets)
+	}
+}
