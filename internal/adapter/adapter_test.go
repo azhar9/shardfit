@@ -41,7 +41,7 @@ func TestGetUnknown(t *testing.T) {
 
 func TestReadListFile(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "list.txt")
-	os.WriteFile(path, []byte("a\nb\n\na\n"), 0o644)
+	os.WriteFile(path, []byte("a\nb\n\n  a  \r\n"), 0o644)
 	tests, err := ReadList(path, nil)
 	if err != nil {
 		t.Fatal(err)

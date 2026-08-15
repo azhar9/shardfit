@@ -68,7 +68,9 @@ func All() []string {
 func Names() string { return strings.Join(All(), ", ") }
 
 // ReadList reads test ids from a file (or stdin for "-"), one per line.
-// Blank lines are skipped.
+// Blank lines are skipped. Lines are limited to the scanner default of
+// 64KB; over-long lines fail loudly with "token too long" (test ids are
+// never near that size).
 func ReadList(ref string, stdin io.Reader) ([]Test, error) {
 	var r io.Reader
 	if ref == "-" {
