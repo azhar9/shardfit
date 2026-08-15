@@ -11,12 +11,12 @@ jobs:
     outputs:
       shards: ${{ steps.split.outputs.shards }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install shardfit
         run: |
           curl -sSL https://github.com/azhar9/shardfit/releases/latest/download/shardfit_Linux_x86_64.tar.gz | tar xz
           sudo mv shardfit /usr/local/bin/
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         id: timings
         with:
           path: timings.json
@@ -28,11 +28,11 @@ jobs:
         run: |
           shardfit pytest split -n 8 --timings timings.json --out-dir buckets
           echo "shards=$(ls buckets/bucket-*.txt | wc -l)" >> "$GITHUB_OUTPUT"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: buckets
           path: buckets/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: timings-read
           path: timings.json
@@ -45,12 +45,12 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: buckets
       - run: pytest $(cat bucket-${{ matrix.shard }}.txt) --junitxml=results-${{ matrix.shard }}.xml
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: results-${{ matrix.shard }}
           path: results-${{ matrix.shard }}.xml
@@ -60,16 +60,16 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install shardfit
         run: |
           curl -sSL https://github.com/azhar9/shardfit/releases/latest/download/shardfit_Linux_x86_64.tar.gz | tar xz
           sudo mv shardfit /usr/local/bin/
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: results-*
           merge-multiple: true
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: timings.json
           key: shardfit-timings-${{ github.ref_name }}-${{ github.sha }}
