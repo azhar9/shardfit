@@ -125,6 +125,25 @@ func TestSaveRejectsURL(t *testing.T) {
 	}
 }
 
+func TestSaveCleanupOnRenameFailure(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "timings.json")
+	if err := os.Mkdir(path, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	s, _ := Load("")
+	s.Merge(map[string]int64{"a": 1}, today, 5)
+	if err := s.Save(path); err == nil {
+		t.Fatal("want error when target path is a directory")
+	}
+	entries, _ := os.ReadDir(dir)
+	for _, e := range entries {
+		if strings.Contains(e.Name(), ".tmp-") {
+			t.Fatalf("temp file left behind: %s", e.Name())
+		}
+	}
+}
+
 func TestExpectedFor(t *testing.T) {
 	s, _ := Load("")
 	for i := int64(100); i <= 700; i += 100 {

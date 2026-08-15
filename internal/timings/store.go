@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
@@ -55,7 +54,7 @@ func Load(ref string) (*Store, error) {
 }
 
 func readRef(ref string) ([]byte, error) {
-	if strings.HasPrefix(ref, "http://") || strings.HasPrefix(ref, "https://") {
+	if u, err := url.Parse(ref); err == nil && (u.Scheme == "http" || u.Scheme == "https") {
 		resp, err := http.Get(ref)
 		if err != nil {
 			return nil, fmt.Errorf("fetch timings %s: %w", ref, err)
@@ -64,7 +63,11 @@ func readRef(ref string) ([]byte, error) {
 		if resp.StatusCode != http.StatusOK {
 			return nil, fmt.Errorf("fetch timings %s: %s", ref, resp.Status)
 		}
-		return io.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("read timings %s: %w", ref, err)
+		}
+		return data, nil
 	}
 	data, err := os.ReadFile(ref)
 	if os.IsNotExist(err) {
@@ -135,9 +138,18 @@ func (s *Store) Save(path string) error {
 	}
 	tmpName := tmp.Name()
 	cleanup := func() { tmp.Close(); os.Remove(tmpName) }
+	// CreateTemp makes 0600 files; restore the usual 0644 before writing.
+	if err := os.Chmod(tmpName, 0o644); err != nil {
+		cleanup()
+		return fmt.Errorf("chmod temp timings file: %w", err)
+	}
 	if _, err := tmp.Write(data); err != nil {
 		cleanup()
 		return fmt.Errorf("write temp timings file: %w", err)
+	}
+	if err := tmp.Sync(); err != nil {
+		cleanup()
+		return fmt.Errorf("sync temp timings file: %w", err)
 	}
 	if err := tmp.Close(); err != nil {
 		os.Remove(tmpName)
