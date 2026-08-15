@@ -40,6 +40,27 @@ func TestParseDurationsJUnitLogger(t *testing.T) {
 	}
 }
 
+func TestParseDurationsTheoryCases(t *testing.T) {
+	// [Theory] + [InlineData] rows: JUnitTestLogger emits one testcase per
+	// row, with the arguments in the display name — each row keeps its own
+	// id and duration, exactly as `dotnet test --list-tests` lists them
+	xml := `<testsuite name="MyApp.Tests.ApiTests" tests="3">
+  <testcase classname="MyApp.Tests.ApiTests" name="Add_Numbers_ReturnsExpectedSum(a: 2, b: 3, expected: 5)" time="0.1"/>
+  <testcase classname="MyApp.Tests.ApiTests" name="Add_Numbers_ReturnsExpectedSum(a: 10, b: 5, expected: 15)" time="0.15"/>
+  <testcase classname="MyApp.Tests.ApiTests" name="Add_Numbers_ReturnsExpectedSum(a: -1, b: -1, expected: -2)" time="0.12"/>
+</testsuite>`
+	got, err := New().ParseDurations([]byte(xml))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got["MyApp.Tests.ApiTests.Add_Numbers_ReturnsExpectedSum(a: 2, b: 3, expected: 5)"] != 100 {
+		t.Fatalf("theory row 1 = %v", got)
+	}
+	if len(got) != 3 {
+		t.Fatalf("theory rows must stay distinct, got %d entries: %v", len(got), got)
+	}
+}
+
 func TestGranularity(t *testing.T) {
 	if New().Granularity() != adapter.GranularityTest {
 		t.Fatal("xunit should shard at test granularity")

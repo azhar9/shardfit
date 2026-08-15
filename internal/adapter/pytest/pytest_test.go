@@ -26,6 +26,7 @@ func TestParseDurationsReconstructsFile(t *testing.T) {
 
 	xml := `<testsuites><testsuite name="pytest">
   <testcase classname="tests.test_api" name="test_create" time="1.234"/>
+  <testcase classname="tests.test_api" name="test_create[user]" time="0.9"/>
   <testcase classname="tests.test_api.TestClass" name="test_method" time="0.5"/>
   <testcase classname="missing.mod" name="test_gone" time="0.1"/>
 </testsuite></testsuites>`
@@ -35,6 +36,7 @@ func TestParseDurationsReconstructsFile(t *testing.T) {
 	}
 	want := map[string]int64{
 		"tests/test_api.py::test_create":            1234,
+		"tests/test_api.py::test_create[user]":      900,
 		"tests/test_api.py::TestClass::test_method": 500,
 		"missing/mod.py::test_gone":                 100,
 	}
