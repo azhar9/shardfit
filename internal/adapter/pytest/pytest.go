@@ -44,7 +44,7 @@ func (a *Adapter) Discover(cfg adapter.DiscoverConfig) ([]adapter.Test, error) {
 	}
 	args := []string{"--collect-only", "-q"}
 	if cfg.Filter != "" {
-		args = append(strings.Fields(cfg.Filter), args...)
+		args = append(adapter.SplitFilter(cfg.Filter), args...)
 	}
 	out, err := exec.Command("pytest", args...).Output()
 	if err != nil {

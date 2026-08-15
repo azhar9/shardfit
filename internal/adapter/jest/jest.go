@@ -44,7 +44,7 @@ func (a *Adapter) Discover(cfg adapter.DiscoverConfig) ([]adapter.Test, error) {
 	}
 	args := []string{"--listTests"}
 	if cfg.Filter != "" {
-		args = append(strings.Fields(cfg.Filter), args...)
+		args = append(adapter.SplitFilter(cfg.Filter), args...)
 	}
 	out, err := exec.Command("jest", args...).Output()
 	if err != nil {
@@ -61,7 +61,7 @@ func (a *Adapter) Discover(cfg adapter.DiscoverConfig) ([]adapter.Test, error) {
 		if p == "" {
 			continue
 		}
-		if rel, err := filepath.Rel(cwd, p); err == nil && !strings.HasPrefix(rel, "..") {
+		if rel, err := filepath.Rel(cwd, p); err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
 			p = rel
 		}
 		id := filepath.ToSlash(p)
