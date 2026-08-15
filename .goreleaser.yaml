@@ -13,7 +13,10 @@ builds:
       - "main.version={{.Version}}"
 
 archives:
-  - formats: [tar.gz]
+  # versionless asset names so docs can link releases/latest/download/…
+  # (each release replaces the previous shardfit_<os>_<arch> asset)
+  - name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    formats: [tar.gz]
     format_overrides:
       - goos: windows
         formats: [zip]
