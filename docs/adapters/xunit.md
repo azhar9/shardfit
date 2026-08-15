@@ -14,3 +14,8 @@ XML, then:
 ```bash
 shardfit xunit report --junit-xml "results-*.xml" --timings timings.json
 ```
+
+Theory rows keep their arguments in the display name — each row is its own
+test id with its own duration. Produce the list and run the tests with the
+same SDK version: VSTest display-name formatting has changed across .NET
+versions, and both sides must agree.
