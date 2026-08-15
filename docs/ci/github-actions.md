@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v7
       - name: Install shardfit
         run: |
-          curl -sSL https://github.com/azhar9/shardfit/releases/latest/download/shardfit_Linux_x86_64.tar.gz | tar xz
+          curl -sSL https://github.com/azhar9/shardfit/releases/latest/download/shardfit_linux_amd64.tar.gz | tar xz
           sudo mv shardfit /usr/local/bin/
       - uses: actions/cache@v6
         id: timings
@@ -63,7 +63,7 @@ jobs:
       - uses: actions/checkout@v7
       - name: Install shardfit
         run: |
-          curl -sSL https://github.com/azhar9/shardfit/releases/latest/download/shardfit_Linux_x86_64.tar.gz | tar xz
+          curl -sSL https://github.com/azhar9/shardfit/releases/latest/download/shardfit_linux_amd64.tar.gz | tar xz
           sudo mv shardfit /usr/local/bin/
       - uses: actions/download-artifact@v8
         with:

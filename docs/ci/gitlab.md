@@ -15,7 +15,10 @@ stages: [split, test, report]
 split:
   stage: split
   <<: *split-cache
-  image: ghcr.io/azhar9/shardfit:latest # or download the binary in a before_script
+  image: python:3.12
+  before_script:
+    - curl -sSL https://github.com/azhar9/shardfit/releases/latest/download/shardfit_linux_amd64.tar.gz | tar xz
+    - mv shardfit /usr/local/bin/
   script:
     - shardfit pytest split -n 8 --timings timings.json --out-dir buckets
   artifacts:

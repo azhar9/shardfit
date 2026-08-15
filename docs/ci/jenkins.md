@@ -9,7 +9,7 @@ pipeline {
   stages {
     stage('Split') {
       steps {
-        sh '''curl -sSL https://github.com/azhar9/shardfit/releases/latest/download/shardfit_Linux_x86_64.tar.gz | tar xz
+        sh '''curl -sSL https://github.com/azhar9/shardfit/releases/latest/download/shardfit_linux_amd64.tar.gz | tar xz
               ./shardfit pytest split -n 8 --timings timings.json --out-dir buckets'''
       }
     }

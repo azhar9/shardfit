@@ -17,7 +17,7 @@ jobs:
             - shardfit-timings-{{ .Branch }}-
             - shardfit-timings-main-
       - run: |
-          curl -sSL https://github.com/azhar9/shardfit/releases/latest/download/shardfit_Linux_x86_64.tar.gz | tar xz
+          curl -sSL https://github.com/azhar9/shardfit/releases/latest/download/shardfit_linux_amd64.tar.gz | tar xz
           ./shardfit pytest split -n 8 --timings timings.json --out-dir buckets
       - persist_to_workspace:
           root: .
@@ -46,7 +46,7 @@ jobs:
             - shardfit-timings-main-
       - attach_workspace: {at: .}
       - run: |
-          curl -sSL https://github.com/azhar9/shardfit/releases/latest/download/shardfit_Linux_x86_64.tar.gz | tar xz
+          curl -sSL https://github.com/azhar9/shardfit/releases/latest/download/shardfit_linux_amd64.tar.gz | tar xz
           ./shardfit pytest report --junit-xml "results-*.xml" --timings timings.json
       - save_cache:
           key: shardfit-timings-{{ .Branch }}-{{ .Revision }}
