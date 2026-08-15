@@ -28,6 +28,5 @@ release:
   draft: false
 
 changelog:
+  # default git format is "SHA Message" — no author emails in public notes
   use: git
-  # no author emails in public release notes
-  format: "{{.AbbrevHash}} {{.Message}}"
