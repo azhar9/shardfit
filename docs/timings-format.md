@@ -33,6 +33,18 @@ bucket, or a GCS/S3 path that your CI syncs. Cache it **per branch** and let
 only the default branch's copy propagate — the standard CI-cache pattern —
 so parallel branches don't race on writes. The report job is the only writer.
 
+## Fast tests and overhead
+
+Durations come from JUnit XML's per-test `time` attribute, in milliseconds —
+sub-millisecond tests round to 0 or 1ms. Very fast suites are handled
+correctly: when every test weighs ~0, the split spreads them evenly by count,
+which is already the optimal balance for equal durations. Note that the
+estimate models the test itself, not the wall-clock around it (interpreter
+startup, imports, fixtures) — so for suites dominated by overhead, expect the
+estimated per-bucket totals to understate real wall time while the split
+itself stays balanced. Jest's file-level sharding captures more of that
+overhead per unit.
+
 ## Hygiene rules
 
 - Deleted tests: stop appearing in reports, then age out. Pruning happens
