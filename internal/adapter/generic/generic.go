@@ -16,6 +16,9 @@ type Adapter struct{}
 // New returns a new Adapter.
 func New() *Adapter { return &Adapter{} }
 
+// Compile-time assertion: Adapter implements adapter.Adapter.
+var _ adapter.Adapter = (*Adapter)(nil)
+
 func (a *Adapter) Name() string { return "generic" }
 
 func (a *Adapter) Granularity() adapter.Granularity { return adapter.GranularityTest }
