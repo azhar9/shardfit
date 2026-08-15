@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"github.com/azhar9/shardfit/internal/adapter"
@@ -18,7 +20,7 @@ func newDiscoverCmd(a adapter.Adapter) *cobra.Command {
 				return err
 			}
 			for _, t := range tests {
-				cmd.Println(t.ID)
+				fmt.Fprintln(cmd.OutOrStdout(), t.ID)
 			}
 			return nil
 		},

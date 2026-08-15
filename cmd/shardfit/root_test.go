@@ -30,7 +30,7 @@ func TestDiscoverPrintsIds(t *testing.T) {
 	if err := cmd.Execute(); err != nil {
 		t.Fatal(err)
 	}
-	if got := strings.Split(strings.TrimSpace(out.String()), "\n"); len(got) != 2 || got[0] != "a" {
+	if got := strings.Split(strings.TrimSpace(out.String()), "\n"); len(got) != 2 || got[0] != "a" || got[1] != "b" {
 		t.Fatalf("output = %q", out.String())
 	}
 }
