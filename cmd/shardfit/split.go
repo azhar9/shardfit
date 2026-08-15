@@ -168,7 +168,7 @@ func writeBuckets(buckets [][]string, expected map[string]int64, unknownEst int6
 	if err := os.MkdirAll(f.outDir, 0o755); err != nil {
 		return fmt.Errorf("create out dir: %w", err)
 	}
-	stale, err := filepath.Glob(filepath.Join(f.outDir, "bucket-*.txt"))
+	stale, err := filepath.Glob(filepath.Join(f.outDir, "bucket-[0-9]*.txt"))
 	if err != nil {
 		return fmt.Errorf("glob bucket files: %w", err)
 	}
