@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/azhar9/shardfit/internal/adapter"
@@ -25,13 +26,28 @@ func TestParseDurationsByFile(t *testing.T) {
 	}
 }
 
-func TestParseDurationsNonPathClassname(t *testing.T) {
-	xml := `<testsuite name="jest"><testcase classname="api" name="creates user" time="0.5"/></testsuite>`
+func TestParseDurationsAllNonPathClassnamesError(t *testing.T) {
+	// jest-junit v16+ defaults classNameTemplate to the test title — this
+	// shape can never match discovery ids, so it must fail loudly
+	xml := `<testsuite name="jest"><testcase classname=" api fast" name=" api fast" time="0.5"/></testsuite>`
+	_, err := New().ParseDurations([]byte(xml))
+	if err == nil || !strings.Contains(err.Error(), "classNameTemplate") {
+		t.Fatalf("err = %v, want classNameTemplate guidance", err)
+	}
+}
+
+func TestParseDurationsMixedClassnames(t *testing.T) {
+	// a custom template with a stray non-path classname is tolerated;
+	// path classnames still map to file ids
+	xml := `<testsuite name="jest">
+  <testcase classname="src/api.test.js" name="creates user" time="1.5"/>
+  <testcase classname="api" name="creates user" time="0.5"/>
+</testsuite>`
 	got, err := New().ParseDurations([]byte(xml))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got["api > creates user"] != 500 {
+	if got["src/api.test.js"] != 1500 || got["api > creates user"] != 500 {
 		t.Fatalf("got = %v", got)
 	}
 }

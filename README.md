@@ -65,7 +65,7 @@ so, and from the second run on the split is duration-aware.
 | Adapter | discover | granularity | JUnit XML source |
 |---|---|---|---|
 | `pytest` | `pytest --collect-only -q` (+ `--filter`) | test | `--junitxml` |
-| `jest` | `jest --listTests` (+ `--filter`) | file | jest-junit reporter |
+| `jest` | `jest --listTests` (+ `--filter`) | file | jest-junit (`classNameTemplate: {filepath}`) |
 | `junit` | `--input` list | test | surefire |
 | `xunit` | `--input` list | test | JUnitTestLogger |
 | `generic` | `--input` list | test | any |

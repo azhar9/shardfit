@@ -81,10 +81,18 @@ func (a *Adapter) ParseDurations(data []byte) (map[string]int64, error) {
 	if err != nil {
 		return nil, err
 	}
-	return junitxml.SumByID(cases, func(c junitxml.Case) string {
+	noPath := true
+	got := junitxml.SumByID(cases, func(c junitxml.Case) string {
 		if strings.Contains(c.Classname, "/") || strings.Contains(c.Classname, `\`) {
+			noPath = false
 			return filepath.ToSlash(c.Classname)
 		}
 		return c.Classname + " > " + c.Name
-	}), nil
+	})
+	// jest-junit v16+ defaults classNameTemplate to the test title, not the
+	// file path: every id would silently mismatch discovery. Fail loudly.
+	if len(cases) > 0 && noPath {
+		return nil, fmt.Errorf("no file-path classnames in JUnit XML; configure jest-junit with classNameTemplate: \"{filepath}\" (see docs/adapters/jest.md)")
+	}
+	return got, nil
 }
