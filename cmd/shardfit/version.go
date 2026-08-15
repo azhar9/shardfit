@@ -6,9 +6,9 @@ import (
 )
 
 // version is stamped at build time by goreleaser
-// (-X main.version={{.Version}}). go-installed and local builds fall back to
-// the module version embedded by the Go toolchain (e.g. "0.1.0" for
-// @v0.1.0 installs); dev checkouts stay "0.1.0-dev".
+// (-X main.version={{.Version}}). go-installed builds fall back to the
+// module version embedded by the Go toolchain (e.g. "0.1.0" for @v0.1.0
+// installs); dev checkouts get a pseudo-version identifying the commit.
 var version = "0.1.0-dev"
 
 func init() {
