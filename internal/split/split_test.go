@@ -49,14 +49,29 @@ func TestPartitionDeterministic(t *testing.T) {
 }
 
 func TestPartitionUsesUnknownEstimate(t *testing.T) {
-	tests := []Test{{ID: "known"}, {ID: "fresh"}}
+	tests := []Test{{ID: "known"}, {ID: "fresh1"}, {ID: "fresh2"}}
 	expected := map[string]int64{"known": 100}
-	buckets, err := Partition(tests, expected, 90, 2, false)
+	buckets, err := Partition(tests, expected, 80, 2, false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(buckets[0]) != 1 || len(buckets[1]) != 1 {
-		t.Fatalf("each bucket should hold one test, got %v", buckets)
+	got := loads(buckets, map[string]int64{"known": 100, "fresh1": 80, "fresh2": 80})
+	if !reflect.DeepEqual(got, []int64{100, 160}) {
+		t.Fatalf("loads = %v, want [100 160] (unknown estimate must count)", got)
+	}
+}
+
+func TestPartitionSortsLongestFirst(t *testing.T) {
+	// input deliberately unsorted: plain input-order greedy yields [6 14],
+	// LPT (sorted desc) yields [10 10]
+	tests := []Test{{ID: "a"}, {ID: "b"}, {ID: "c"}}
+	expected := map[string]int64{"a": 6, "b": 4, "c": 10}
+	buckets, err := Partition(tests, expected, 0, 2, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := loads(buckets, expected); !reflect.DeepEqual(got, []int64{10, 10}) {
+		t.Fatalf("loads = %v, want [10 10] (LPT requires sorting longest-first)", got)
 	}
 }
 
@@ -90,6 +105,29 @@ func TestPartitionGroupByFile(t *testing.T) {
 	for _, id := range buckets[f1Bucket] {
 		if !strings.HasPrefix(id, "f1::") {
 			t.Fatalf("file group split across buckets: %v", buckets)
+		}
+	}
+}
+
+func TestPartitionGroupByFileDeterministic(t *testing.T) {
+	tests := []Test{
+		{ID: "f1::t1", File: "f1"},
+		{ID: "f2::t2", File: "f2"},
+		{ID: "f1::t3", File: "f1"},
+		{ID: "f3::t4", File: "f3"},
+	}
+	expected := map[string]int64{"f1::t1": 10, "f2::t2": 20, "f1::t3": 30, "f3::t4": 5}
+	first, err := Partition(tests, expected, 0, 2, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < 5; i++ {
+		again, err := Partition(tests, expected, 0, 2, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(first, again) {
+			t.Fatalf("grouped partition not deterministic:\n%v\n%v", first, again)
 		}
 	}
 }
