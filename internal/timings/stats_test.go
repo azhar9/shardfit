@@ -48,9 +48,9 @@ func TestExpectedDurationStable(t *testing.T) {
 }
 
 func TestExpectedDurationDampensFlaky(t *testing.T) {
-	// one 500ms outlier among 100ms runs: CV > 0.5 → dampened toward P25 (100)
-	if got := ExpectedDuration([]int64{100, 100, 100, 100, 500}); got != 100 {
-		t.Fatalf("ExpectedDuration flaky = %d, want 100", got)
+	// two 500ms outliers among 100ms runs: CV > 0.5 → blend of wmedian 500 and P25 100 = 380
+	if got := ExpectedDuration([]int64{100, 100, 100, 500, 500}); got != 380 {
+		t.Fatalf("ExpectedDuration flaky = %d, want 380", got)
 	}
 }
 
